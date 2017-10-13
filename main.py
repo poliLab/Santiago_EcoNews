@@ -53,13 +53,13 @@ class MainCrawler:
 
     def startProcess(self):
         if len(self.linkList) == 0:
-            print 'Insert seed urls'
+            print('Insert seed urls')
         else:
             while len(self.linkList) > 0:
                 if self.linkList[-1]['url'] not in self.readLinks and self.linkList[-1]['level'] <= self.deep:
                     self.cont = self.cont + 1
-                    print 'Page ' + str(self.cont) +'====================================================='
-                    print 'Working on: ' + self.linkList[-1]['url'] + ' --- level ' + str(self.linkList[-1]['level'])
+                    print('Page ' + str(self.cont) +'=====================================================')
+                    print('Working on: ' + self.linkList[-1]['url'] + ' --- level ' + str(self.linkList[-1]['level']))
                     webInfo = Crawler.getInfoFromOneWeb(self.linkList[-1]['url'])
                     self.readLinks.append(self.linkList[-1]['url'])
                     p = Page(self.linkList[-1]['url'], '', self.linkList[-1]['level'], self.linkList[-1]['url'], webInfo['links'], [], [])
@@ -68,8 +68,8 @@ class MainCrawler:
 
                 self.linkList.pop()
 
-            print '***** THE PROCESS HAS FINISHED *****'
-            print 'READ PAGES: ' + str(len(self.readLinks))
+            print('***** THE PROCESS HAS FINISHED *****')
+            print('READ PAGES: ' + str(len(self.readLinks)))
 
 mc = MainCrawler()
 seed = [
