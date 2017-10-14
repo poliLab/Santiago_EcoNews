@@ -3,7 +3,8 @@ from schemas import Page
 from data_collector import DataCollector
 import validators
 
-dc = DataCollector('localhost', 27017, '20171009-morning')
+dc = DataCollector('localhost', 27017, '20171013-nigth')
+readLinks = []
 
 class Utils:
 
@@ -34,42 +35,41 @@ class Utils:
 class MainCrawler:
     
     def __init__(self):
-        self.linkList = list()
-        self.readLinks = []
+        self.seed = []
         self.deep = 10
-        self.cont = 0
 
     def setDeep(self, newDeep):
         self.deep = newDeep
 
     def addSeed(self, links):
         for link in links:
-            self.linkList.append({'url': link, 'level': 0})
+            self.seed.append(link)
 
-    def addLinks(self, links, parentLevel):
-        for link in links:
-            if Utils.isValidURL(link):
-                self.linkList.append({'url': link, 'level': parentLevel+1})
+    @staticmethod
+    def extractLinks(url, depth, maxDepth):
+        if Utils.isValidURL(url) and url not in readLinks:
+            readLinks.append(url)
+            webInfo = Crawler.getInfoFromOneWeb(url)
+            print('===== Working on: ' + url + ' --- depth: ' + str(depth) + ' --- ' +str(len(webInfo['links'])) + ' links were found')
+            p = Page(url, '', depth, url, webInfo['links'], [], [])
+            dc.addData('collectionoftest', p.returnLikeObject())
+            depth = depth + 1
+            if depth < maxDepth :
+                for newUrl in webInfo['links']:
+                    MainCrawler.extractLinks(newUrl, depth, maxDepth)
+            else:
+                return
+        
 
     def startProcess(self):
-        if len(self.linkList) == 0:
+        if len(self.seed) == 0:
             print('Insert seed urls')
         else:
-            while len(self.linkList) > 0:
-                if self.linkList[-1]['url'] not in self.readLinks and self.linkList[-1]['level'] <= self.deep:
-                    self.cont = self.cont + 1
-                    print('Page ' + str(self.cont) +'=====================================================')
-                    print('Working on: ' + self.linkList[-1]['url'] + ' --- level ' + str(self.linkList[-1]['level']))
-                    webInfo = Crawler.getInfoFromOneWeb(self.linkList[-1]['url'])
-                    self.readLinks.append(self.linkList[-1]['url'])
-                    p = Page(self.linkList[-1]['url'], '', self.linkList[-1]['level'], self.linkList[-1]['url'], webInfo['links'], [], [])
-                    dc.addData('collectionoftest', p.returnLikeObject())
-                    self.addLinks(webInfo['links'], self.linkList[-1]['level'])
+            for link in self.seed:
+                MainCrawler.extractLinks(link, 0, self.deep)
 
-                self.linkList.pop()
-
-            print('***** THE PROCESS HAS FINISHED *****')
-            print('READ PAGES: ' + str(len(self.readLinks)))
+        print('***** THE PROCESS HAS FINISHED *****')
+        print(str(len(readLinks)) + ' read links')
 
 mc = MainCrawler()
 seed = [
@@ -82,6 +82,7 @@ seed = [
     'http://www.elespectador.com/noticias/medio-ambiente',
     'http://www.wwf.org.co/medioambiente.cfm'
 ]
+
 mc.addSeed(seed)
 mc.setDeep(5)
 mc.startProcess()

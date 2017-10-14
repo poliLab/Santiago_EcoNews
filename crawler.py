@@ -17,7 +17,7 @@ class Crawler:
     @staticmethod
     def getInfoFromOneWeb(web):
 
-        print('Getting info from ' + web)
+        #print('Getting info from ' + web)
 
         try:
             request = requests.get(web, timeout=5)
